@@ -9,7 +9,7 @@ Basically just include stmpe811.h and stmpe811.c in your project,
 then use as follows:
 
 
-if( stmpe811_init() != stmpe811_state_ok ) {
+if (stmpe811_init() != stmpe811_state_ok) {
 	console_puts("STMPE811 Error!");
 }
 
@@ -18,8 +18,8 @@ stmpe811_data.orientation = stmpe811_portrait_2;
 
 console_puts("Press on touchscreen please!\n\n");
 
-while(1) {
-	if( stmpe811_read_touch(&stmpe811_data) == stmpe811_state_pressed ) {
+while (1) {
+	if (stmpe811_read_touch(&stmpe811_data) == stmpe811_state_pressed) {
 		do_pressed_action;
 	} else {
 		do_unpressed_action;

@@ -26,8 +26,39 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include "stmpe811.h"
-#include "clock.h"
-#include "console.h"
+
+void stmpe811_temp_start(void) {
+	uint32_t data;
+
+
+
+	data = stmpe811_read(STMPE811_TEMP_CTRL);
+	//printf("temp control: 0x%08X\r\n", data);
+	data |= STMPE811_TEMP_CTRL_ACQ;
+	data |= STMPE811_TEMP_CTRL_EN;
+	stmpe811_write(STMPE811_TEMP_CTRL, (uint8_t )data);
+	//data = stmpe811_read(STMPE811_TEMP_CTRL);
+	//printf("temp control: 0x%08X\r\n", data);
+
+}
+
+void stmpe811_get_temp(void) {
+	uint32_t temp;
+	stmpe811_temp_start();
+	temp = stmpe811_read(STMPE811_TEMP_DATA);
+	//printf("temp data1 = 0x%08X\r\n", temp);
+	temp = ((temp & STMPE811_TEMP_DATA_MSB_MASK) << 8) | stmpe811_read(STMPE811_TEMP_DATA + 1);
+	//printf("temp data2 = 0x%08X\r\n", temp);
+	//data = data * 3.3;
+	//data = (uint32_t)(data * 7.51);
+	//data = data - 273;
+	//data = (data - 32) * (5 / 9);
+	temp = (uint32_t)(((3.3 * temp) / 7.51) - 273);
+	//data = (uint32_t)((data + 5) /10);
+	//data = (uint32_t)((data + 5) / 10);
+	//data = (uint32_t)((data - 32 - 255) * 5 / 9);
+	printf("temp in celsius: %d\r\n", temp);
+}
 
 void stmpe811_i2c_init()
 {
@@ -144,14 +175,60 @@ void stmpe811_reset(void)
 	msleep(2);
 }
 
+void stmpe811_enable_ts(void)
+{
+	uint8_t mode;
+	mode = stmpe811_read(STMPE811_SYS_CTRL2);
+	mode &= ~STMPE811_SYS_CTRL2_TS_OFF;
+	stmpe811_write(STMPE811_SYS_CTRL2, mode);
+}
+
 void stmpe811_disable_ts(void)
 {
-	stmpe811_write(STMPE811_SYS_CTRL2, 0x08);
+	stmpe811_write(STMPE811_SYS_CTRL2, STMPE811_SYS_CTRL2_TS_OFF);
+}
+
+void stmpe811_enable_gpio(void)
+{
+	uint8_t mode;
+	mode = stmpe811_read(STMPE811_SYS_CTRL2);
+	mode &= ~STMPE811_SYS_CTRL2_GPIO_OFF;
+	stmpe811_write(STMPE811_SYS_CTRL2, mode);
 }
 
 void stmpe811_disable_gpio(void)
 {
-	stmpe811_write(STMPE811_SYS_CTRL2, 0x04);
+	stmpe811_write(STMPE811_SYS_CTRL2, STMPE811_SYS_CTRL2_GPIO_OFF);
+}
+
+void stmpe811_enable_tsc(void)
+{
+	uint8_t mode;
+	mode = stmpe811_read(STMPE811_SYS_CTRL2);
+	mode &= ~STMPE811_SYS_CTRL2_TSC_OFF;
+	stmpe811_write(STMPE811_SYS_CTRL2, mode);
+
+	mode = stmpe811_read(STMPE811_TSC_CTRL);
+	mode |= STMPE811_TSC_CTRL_EN;
+	stmpe811_write(STMPE811_TSC_CTRL, mode);
+}
+
+void stmpe811_disable_tsc(void)
+{
+	stmpe811_write(STMPE811_SYS_CTRL2, STMPE811_SYS_CTRL2_TSC_OFF);
+}
+
+void stmpe811_enable_adc(void)
+{
+	uint8_t mode;
+	mode = stmpe811_read(STMPE811_SYS_CTRL2);
+	mode &= ~STMPE811_SYS_CTRL2_ADC_OFF;
+	stmpe811_write(STMPE811_SYS_CTRL2, mode);
+}
+
+void stmpe811_disable_adc(void)
+{
+	stmpe811_write(STMPE811_SYS_CTRL2, STMPE811_SYS_CTRL2_ADC_OFF);
 }
 
 void stmpe811_enable_fifo_of(void)
@@ -226,14 +303,6 @@ void stmpe811_set_tsc_fraction_z(uint8_t z)
 void stmpe811_set_tsc_i_drive(uint8_t limit)
 {
 	stmpe811_write(STMPE811_TSC_I_DRIVE, limit);
-}
-
-void stmpe811_enable_tsc(void)
-{
-	uint8_t mode;
-	mode = stmpe811_read(STMPE811_TSC_CTRL);
-	mode |= 0x01;
-	stmpe811_write(STMPE811_TSC_CTRL, mode);
 }
 
 void stmpe811_set_int_sta(uint8_t status)

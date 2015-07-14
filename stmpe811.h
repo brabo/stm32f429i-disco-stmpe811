@@ -83,6 +83,32 @@
 #define STMPE811_TEMP_DATA	0x61	/* Temperature data access port */
 #define STMPE811_TEMP_TH	0x62	/* Threshold for temp controlled int */
 
+#define STMPE811_SYS_CTRL2_ADC_OFF	(1 << 0)
+#define STMPE811_SYS_CTRL2_TSC_OFF	(1 << 1)
+#define STMPE811_SYS_CTRL2_GPIO_OFF	(1 << 2)
+#define STMPE811_SYS_CTRL2_TS_OFF	(1 << 3)
+
+#define STMPE811_TEMP_CTRL_EN		(1 << 0)
+#define STMPE811_TEMP_CTRL_ACQ		(1 << 1)
+#define STMPE811_TEMP_DATA_MSB_MASK	0x03
+
+#define STMPE811_TSC_CTRL_EN		(1 << 0)
+
+#define STMPE811_INT_EN_TOUCH_DET	(1 << 0)
+#define STMPE811_INT_EN_FIFO_TH		(1 << 1)
+#define STMPE811_INT_EN_FIFO_OFLOW	(1 << 2)
+#define STMPE811_INT_EN_FIFO_FULL	(1 << 3)
+#define STMPE811_INT_EN_FIFO_EMPTY	(1 << 4)
+#define STMPE811_INT_EN_TEMP_SENS	(1 << 5)
+#define STMPE811_INT_EN_ADC		(1 << 6)
+#define STMPE811_INT_EN_GPIO		(1 << 7)
+
+#define STMPE811_SYS_CTRL1_SOFT_RESET	(1 << 1)
+
+#define STMPE811_FIFO_STA_TOUCH_DET	(1 << 0)
+
+#define STMPE811_INT_CTRL_GLOBAL_INT	(1 << 0)
+
 #define I2C_CR2_FREQ_MASK	0x3ff
 
 #define I2C_CCR_CCRMASK	0xfff
@@ -140,8 +166,14 @@ uint32_t i2c_read(uint32_t i2c, uint8_t address, uint8_t reg);
 void stmpe811_write(uint8_t reg, uint8_t data);
 uint32_t stmpe811_read(uint8_t reg);
 void stmpe811_reset(void);
+void stmpe811_enable_ts(void);
 void stmpe811_disable_ts(void);
+void stmpe811_enable_gpio(void);
 void stmpe811_disable_gpio(void);
+void stmpe811_enable_tsc(void);
+void stmpe811_disable_tsc(void);
+void stmpe811_enable_adc(void);
+void stmpe811_disable_adc(void);
 void stmpe811_enable_fifo_of(void);
 void stmpe811_enable_fifo_th(void);
 void stmpe811_enable_fifo_touch_det(void);
@@ -154,9 +186,10 @@ void stmpe811_set_fifo_th(uint8_t th);
 void stmpe811_reset_fifo(void);
 void stmpe811_set_tsc_fraction_z(uint8_t z);
 void stmpe811_set_tsc_i_drive(uint8_t limit);
-void stmpe811_enable_tsc(void);
 void stmpe811_set_int_sta(uint8_t status);
 void stmpe811_enable_interrupts(void);
+void stmpe811_temp_start(void);
+void stmpe811_get_temp(void);
 stmpe811_state_t stmpe811_init(void);
 uint16_t stmpe811_read_x(uint16_t x);
 uint16_t stmpe811_read_y(uint16_t y);
